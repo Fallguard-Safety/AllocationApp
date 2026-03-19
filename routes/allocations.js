@@ -280,6 +280,7 @@ router.put("/:id/actual", async (req, res) => {
   try {
     const { actual_quantity } = req.body;
 
+    const actual = parseInt(actual_quantity) || 0;
     const allocation = await Allocation.findById(req.params.id);
 
     if (!allocation) {
@@ -288,12 +289,13 @@ router.put("/:id/actual", async (req, res) => {
 
     let status = "Pending";
 
-    if (actual_quantity === 0) status = "Pending";
-    else if (actual_quantity < allocation.quantity) status = "Partial";
-    else if (actual_quantity === allocation.quantity) status = "Completed";
-    else if (actual_quantity > allocation.quantity) status = "Over Completed";
+    if (actual === 0) status = "Pending";
+    else if (actual < allocation.quantity) status = "Partial";
+    else if (actual === allocation.quantity) status = "Completed";
+    else if (actual > allocation.quantity) status = "Over Completed";
 
-    allocation.actual_quantity = parseInt(actual_quantity) || 0;
+
+    allocation.actual_quantity = actual;
     allocation.status = status;
 
     await allocation.save();
