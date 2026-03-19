@@ -38,9 +38,12 @@ router.get("/allocations", async (req, res) => {
 
       start_date: a.start_date,
       end_date: a.end_date,
-
       start_time: a.start_time,
-      end_time: a.end_time
+      end_time: a.end_time,
+
+      // ✅ ADD THESE
+      actual_quantity: a.actual_quantity,
+      status: a.status
     }));
 
     res.json(formatted);

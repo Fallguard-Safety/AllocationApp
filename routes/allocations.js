@@ -278,31 +278,33 @@ router.delete("/:id", async (req, res) => {
 
 router.put("/:id/actual", async (req, res) => {
   try {
-
     const { actual_quantity } = req.body;
 
-    const updated = await Allocation.findByIdAndUpdate(
-      req.params.id,
-      { actual_quantity: parseInt(actual_quantity) || 0 },
-      { returnDocument: "after" }
-    );
+    const allocation = await Allocation.findById(req.params.id);
 
-    if (!updated) {
-      return res.status(404).json({
-        message: "Allocation not found"
-      });
+    if (!allocation) {
+      return res.status(404).json({ message: "Allocation not found" });
     }
 
+    let status = "Pending";
+
+    if (actual_quantity === 0) status = "Pending";
+    else if (actual_quantity < allocation.quantity) status = "Partial";
+    else if (actual_quantity === allocation.quantity) status = "Completed";
+    else if (actual_quantity > allocation.quantity) status = "Over Completed";
+
+    allocation.actual_quantity = parseInt(actual_quantity) || 0;
+    allocation.status = status;
+
+    await allocation.save();
+
     res.json({
-      message: "Actual updated successfully",
-      data: updated
+      message: "Actual + status updated",
+      data: allocation
     });
 
   } catch (err) {
-    console.error(err);
-    res.status(500).json({
-      error: "Failed to update actual"
-    });
+    res.status(500).json({ error: "Failed to update actual" });
   }
 });
 
